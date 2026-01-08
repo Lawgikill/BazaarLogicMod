@@ -6,3 +6,11 @@ obj/
 /**/libs/
 .idea/
 Folder.DotSettings.user
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
