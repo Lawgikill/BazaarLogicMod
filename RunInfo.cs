@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using BazaarGameShared.Domain.Core;
 using BazaarGameShared.Domain.Core.Types;
 
-namespace BazaarPlannerMod;
+namespace BazaarLogicMod;
 
 public class RunInfo
 {

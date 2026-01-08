@@ -65,7 +65,7 @@ Launch the game again via Steam and ensure it works correctly with these setting
 
 ## 12. Install the Mod
 ### Option 1: Wine Installer
-1. Run `BazaarPlannerModInstaller.exe` via Wine
+1. Run `BazaarLogicModInstaller.exe` via Wine
 2. Installation path should be: `Z:/home/[your-username]/Games/Tempo Launcher - Beta/The Bazaar game_64/bazaarwinprodlatest/`
 
 ### Option 2: Manual Install

@@ -5,16 +5,17 @@ using System.Drawing;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace BazaarPlannerModInstaller
+namespace BazaarLogicModInstaller
 {
     public partial class InstallerForm : Form
     {
         private TextBox installPathTextBox;
         private static string DEFAULT_INSTALL_PATH => Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "Tempo Launcher - Beta",
-            "game",
-            "buildx64"
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+            "Steam",
+            "steamapps",
+            "common",
+            "The Bazaar"
         );
         private Button installButton;
         private Label instructionsLabel;
@@ -25,7 +26,7 @@ namespace BazaarPlannerModInstaller
             InitializeComponent();
             
             // Set form properties
-            Text = "Bazaar Planner Mod Installer";
+            Text = "Bazaar Logic Mod Installer";
             ClientSize = new Size(550, 500);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
@@ -34,7 +35,7 @@ namespace BazaarPlannerModInstaller
             // Add logo
             PictureBox logoPictureBox = new PictureBox
             {
-                Image = Image.FromStream(GetType().Assembly.GetManifestResourceStream("BazaarPlannerModInstaller.logo.png")),
+                Image = Image.FromStream(GetType().Assembly.GetManifestResourceStream("BazaarLogicModInstaller.logo.png")),
                 SizeMode = PictureBoxSizeMode.Zoom,
                 Height = 300,
                 Width = ClientSize.Width,
@@ -72,9 +73,9 @@ namespace BazaarPlannerModInstaller
             instructionsLabel = new Label
             {
                 Text = "Please click the gear on the top right of bazaarlogic.quest\n" +
-                      "Login if you are not yet logged in, and then click the 'Export BazaarPlanner.config' button\n" +
+                      "Login if you are not yet logged in, and then click the 'Export BazaarLogic.config' button\n" +
                       "which will download a file. Put this file in the same directory as your\n" +
-                      "BazaarPlanner 3rd party installation tool, so it can be installed correctly\n" +
+                      "BazaarLogic 3rd party installation tool, so it can be installed correctly\n" +
                       "and make requests on behalf of your bazaarlogic.quest user.",
                 Location = new Point(20, installPathTextBox.Bottom + 20),
                 AutoSize = true,
@@ -120,8 +121,8 @@ namespace BazaarPlannerModInstaller
 
         private void CheckForConfigFile()
         {
-            string workingConfigPath = Path.Combine(Application.StartupPath, "BazaarPlanner.config");
-            string targetConfigPath = Path.Combine(installPathTextBox.Text, "BepInEx", "config", "BazaarPlanner.cfg");
+            string workingConfigPath = Path.Combine(Application.StartupPath, "BazaarLogic.config");
+            string targetConfigPath = Path.Combine(installPathTextBox.Text, "BepInEx", "config", "BazaarLogic.cfg");
             
             bool workingConfigExists = File.Exists(workingConfigPath);
             bool targetConfigExists = File.Exists(targetConfigPath);
@@ -207,7 +208,7 @@ namespace BazaarPlannerModInstaller
                 }
 
                 // Check for config file existence
-                string sourceConfigFile = Path.Combine(Application.StartupPath, "BazaarPlanner.config");
+                string sourceConfigFile = Path.Combine(Application.StartupPath, "BazaarLogic.config");
                 if (!File.Exists(sourceConfigFile))
                 {
                     DialogResult result = MessageBox.Show(
@@ -224,7 +225,7 @@ namespace BazaarPlannerModInstaller
 
                 // Extract BepInEx from embedded resource
                 string tempBepinexZip = Path.GetTempFileName();
-                using (var stream = GetType().Assembly.GetManifestResourceStream("BazaarPlannerModInstaller.BepInEx_win_x64_5.4.23.2.zip"))
+                using (var stream = GetType().Assembly.GetManifestResourceStream("BazaarLogicModInstaller.BepInEx_win_x64_5.4.23.2.zip"))
                 using (var fileStream = File.Create(tempBepinexZip))
                 {
                     stream.CopyTo(fileStream);
@@ -237,8 +238,8 @@ namespace BazaarPlannerModInstaller
                 Directory.CreateDirectory(pluginsPath);
 
                 // Extract mod DLL from embedded resource
-                string targetDll = Path.Combine(pluginsPath, "BazaarPlannerMod.dll");
-                using (var stream = GetType().Assembly.GetManifestResourceStream("BazaarPlannerModInstaller.BazaarPlannerMod.dll"))
+                string targetDll = Path.Combine(pluginsPath, "BazaarLogicMod.dll");
+                using (var stream = GetType().Assembly.GetManifestResourceStream("BazaarLogicModInstaller.BazaarLogicMod.dll"))
                 using (var fileStream = File.Create(targetDll))
                 {
                     stream.CopyTo(fileStream);
@@ -249,7 +250,7 @@ namespace BazaarPlannerModInstaller
                 {
                     string configPath = Path.Combine(installPath, "BepInEx", "config");
                     Directory.CreateDirectory(configPath);
-                    string targetConfigFile = Path.Combine(configPath, "BazaarPlanner.cfg");
+                    string targetConfigFile = Path.Combine(configPath, "BazaarLogic.cfg");
                     File.Copy(sourceConfigFile, targetConfigFile, true);
                 }
 

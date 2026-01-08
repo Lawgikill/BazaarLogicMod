@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
         <EmbeddedResource Include="logo.png" />
-        <EmbeddedResource Include="BazaarPlannerMod.dll" />
+        <EmbeddedResource Include="BazaarLogicMod.dll" />
         <EmbeddedResource Include="BepInEx_win_x64_5.4.23.2.zip" />
     </ItemGroup>
   <PropertyGroup>
@@ -23,10 +23,10 @@
             DestinationFolder="$(PublishDir)"
             SkipUnchangedFiles="true" />
   </Target>
-  <Target Name="CopyToBazaarPlannerMod" AfterTargets="Build">
-    <Message Text="Copying BazaarPlannerMod.dll to $(PublishDir)" Importance="high" />
+  <Target Name="CopyToBazaarLogicMod" AfterTargets="Build">
+    <Message Text="Copying BazaarLogicMod.dll to $(PublishDir)" Importance="high" />
     <Copy
-            SourceFiles="BazaarPlannerMod.dll"
+            SourceFiles="BazaarLogicMod.dll"
             DestinationFolder="$(PublishDir)"
             SkipUnchangedFiles="true" />
   </Target>

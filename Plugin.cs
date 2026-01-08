@@ -21,7 +21,7 @@ using System.Threading;
 using System.Reflection;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
-namespace BazaarPlannerMod;
+namespace BazaarLogicMod;
 
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
@@ -42,15 +42,15 @@ public class Plugin : BaseUnityPlugin
     private static DateTime _lastUpdateTime = DateTime.MinValue;
     private static CancellationTokenSource _updateCancellationToken;
     private static EVictoryCondition _lastVictoryCondition;
-    private static string _firebaseUrl = "https://bazaarplanner-default-rtdb.firebaseio.com/";
+    private static string _firebaseUrl = "https://bazaarlogic-default-rtdb.firebaseio.com/";
     private static Dictionary<string, List<string>> _baseItemTags;
-    private const string GithubApiUrl = "https://api.github.com/repos/oceanseth/BazaarPlannerMod/releases/latest";
+    private const string GithubApiUrl = "https://api.github.com/repos/oceanseth/BazaarLogicMod/releases/latest";
 
     private static async Task SaveCombat()
     {        
         string uid = UidConfig.Value;
         RunInfo runInfo = getRunInfo();
-        string json = CreateBazaarPlannerJson(runInfo);
+        string json = CreateBazaarLogicJson(runInfo);
         string compressed = LZString.CompressToEncodedURIComponent(json);
         string runId = runInfo.RunId;
         string battleName = $"Day {Data.Run.Day} - {runInfo.OppName}";
@@ -91,7 +91,7 @@ public class Plugin : BaseUnityPlugin
             
             if (string.IsNullOrEmpty(UidConfig.Value) || string.IsNullOrEmpty(token))
             {
-                Console.WriteLine("Cannot save to BazaarPlanner: Missing UID or token");
+                Console.WriteLine("Cannot save to BazaarLogic: Missing UID or token");
                 return;
             }
             
@@ -199,7 +199,7 @@ public class Plugin : BaseUnityPlugin
         return skillInfos;
     }
 
-    private static string CreateBazaarPlannerJson(RunInfo runInfo)
+    private static string CreateBazaarLogicJson(RunInfo runInfo)
     {
         var result = new List<object>();
 
@@ -383,7 +383,7 @@ public class Plugin : BaseUnityPlugin
         return JsonConvert.SerializeObject(result);
     }
 
-    static void OpenInBazaarPlanner(string compressedData)
+    static void OpenInBazaarLogic(string compressedData)
     {
         try
         {
@@ -394,7 +394,7 @@ public class Plugin : BaseUnityPlugin
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error opening BazaarPlanner: {ex.Message}");
+            Console.WriteLine($"Error opening BazaarLogic: {ex.Message}");
         }
     }
     
@@ -407,7 +407,7 @@ public class Plugin : BaseUnityPlugin
         CheckForUpdates();
         
         // Load config
-        BPConfig = new ConfigFile(Path.Combine(Paths.ConfigPath, "BazaarPlanner.cfg"), true);
+        BPConfig = new ConfigFile(Path.Combine(Paths.ConfigPath, "BazaarLogic.cfg"), true);
         try
         {
             Console.WriteLine("Initializing configurations...");
@@ -433,7 +433,7 @@ public class Plugin : BaseUnityPlugin
         try
         {
             var assembly = Assembly.GetExecutingAssembly();
-            using (var stream = assembly.GetManifestResourceStream("BazaarPlannerMod.items.js"))
+            using (var stream = assembly.GetManifestResourceStream("BazaarLogicMod.items.js"))
             using (var reader = new StreamReader(stream))
             {
                 string content = reader.ReadToEnd();
@@ -513,9 +513,9 @@ public class Plugin : BaseUnityPlugin
             _lastSentTime = DateTime.Now;
 
             RunInfo runInfo = getRunInfo();
-            string json = CreateBazaarPlannerJson(runInfo);
+            string json = CreateBazaarLogicJson(runInfo);
             string compressed = LZString.CompressToEncodedURIComponent(json);
-            Task.Run(() => OpenInBazaarPlanner(compressed));
+            Task.Run(() => OpenInBazaarLogic(compressed));
         }
     }
 
@@ -716,7 +716,7 @@ public class Plugin : BaseUnityPlugin
             //Data.Profile.Username = DisplayNameConfig.Value;
             if(UidConfig.Value == null || UidConfig.Value == "") return;
             RunInfo runInfo = getRunInfo();
-            string json = CreateBazaarPlannerJson(runInfo);
+            string json = CreateBazaarLogicJson(runInfo);
             if(json == _lastBoardState) return;
 
             _lastBoardState = json;
@@ -756,7 +756,7 @@ public class Plugin : BaseUnityPlugin
             using (var client = new HttpClient())
             {
                 // Add required headers for GitHub API
-                client.DefaultRequestHeaders.Add("User-Agent", "BazaarPlannerMod");
+                client.DefaultRequestHeaders.Add("User-Agent", "BazaarLogicMod");
                 
                 var response = await client.GetStringAsync(GithubApiUrl);
                 Logger.LogInfo("Got reponse from github: " + response);
@@ -799,9 +799,9 @@ public class Plugin : BaseUnityPlugin
         try
         {
             // Create batch file first, which will handle download and installation if user agrees
-            string batchPath = Path.Combine(Path.GetTempPath(), "UpdateBazaarPlanner.bat");
+            string batchPath = Path.Combine(Path.GetTempPath(), "UpdateBazaarLogic.bat");
             string currentDllPath = Assembly.GetExecutingAssembly().Location;
-            string tempDir = Path.Combine(Path.GetTempPath(), "BazaarPlannerUpdate");
+            string tempDir = Path.Combine(Path.GetTempPath(), "BazaarLogicUpdate");
             
             string batchContent = @$"
 @echo off
@@ -811,7 +811,7 @@ echo Temp directory path: {tempDir} >> %temp%\bp_update.log
 echo Download URL: {downloadUrl} >> %temp%\bp_update.log
 
 set /p result=<nul
-for /f %%i in ('powershell -command ""Add-Type -AssemblyName System.Windows.Forms; $result = [System.Windows.Forms.MessageBox]::Show('New version {latestVersion} of BazaarPlanner available. You are on version {MyPluginInfo.PLUGIN_VERSION}. Update now?', 'BazaarPlanner Update', 'YesNo', 'Question'); $result""') do set result=%%i
+for /f %%i in ('powershell -command ""Add-Type -AssemblyName System.Windows.Forms; $result = [System.Windows.Forms.MessageBox]::Show('New version {latestVersion} of BazaarLogic available. You are on version {MyPluginInfo.PLUGIN_VERSION}. Update now?', 'BazaarLogic Update', 'YesNo', 'Question'); $result""') do set result=%%i
 
 echo User clicked: %result% >> %temp%\bp_update.log
 
@@ -850,8 +850,8 @@ if not ERRORLEVEL 1 (
 echo Starting extraction... >> %temp%\bp_update.log
 powershell -command ""$ProgressPreference = 'SilentlyContinue'; Expand-Archive -Path '{tempDir}\installer.zip' -DestinationPath '{tempDir}' -Force"" >> %temp%\bp_update.log 2>&1
 
-if not exist ""{tempDir}\BazaarPlannerMod.dll"" (
-    echo Extraction failed - BazaarPlannerMod.dll not found >> %temp%\bp_update.log
+if not exist ""{tempDir}\BazaarLogicMod.dll"" (
+    echo Extraction failed - BazaarLogicMod.dll not found >> %temp%\bp_update.log
     exit /b 1
 )
 
@@ -860,13 +860,13 @@ del /F ""{currentDllPath}"" 2>> %temp%\bp_update.log
 
 echo Installing update... >> %temp%\bp_update.log
 set ""random_name=%random%%random%.dll""
-copy /Y ""{tempDir}\BazaarPlannerMod.dll"" ""{Path.GetDirectoryName(currentDllPath)}\%random_name%"" 2>> %temp%\bp_update.log
+copy /Y ""{tempDir}\BazaarLogicMod.dll"" ""{Path.GetDirectoryName(currentDllPath)}\%random_name%"" 2>> %temp%\bp_update.log
 
 echo Cleaning up... >> %temp%\bp_update.log
 timeout /t 2 /nobreak
 rmdir /S /Q ""{tempDir}"" 2>> %temp%\bp_update.log
 
-powershell -command ""Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('BazaarPlanner auto-update successful, you are now on version {latestVersion}, please relaunch game', 'BazaarPlanner Update')""
+powershell -command ""Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('BazaarLogic auto-update successful, you are now on version {latestVersion}, please relaunch game', 'BazaarLogic Update')""
 
 del ""%~f0""
 ";

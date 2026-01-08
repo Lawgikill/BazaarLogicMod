@@ -1,4 +1,4 @@
-namespace BazaarPlannerModInstaller
+namespace BazaarLogicModInstaller
 {
     partial class InstallerForm
     {
@@ -23,7 +23,7 @@ namespace BazaarPlannerModInstaller
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(550, 500);
             this.Name = "InstallerForm";
-            this.Text = "Bazaar Planner Mod Installer";
+            this.Text = "Bazaar Logic Mod Installer";
             this.ResumeLayout(false);
         }
     }

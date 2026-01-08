@@ -7,12 +7,12 @@
 
 # Installing the Mod
 You don't need to clone this repo, simply download the latest version zip file from
-https://github.com/oceanseth/BazaarPlannerMod/releases
+https://github.com/oceanseth/BazaarLogicMod/releases
 then run the Installer.exe file or follow Manual instructions in the text file it contains.
 - [Install on Linux](README-Linux.md)
 
 If you want to build it yourself, clone the repo and run `dotnet publish -c Release` in the root folder.
-Then, simply run the BazaarPlannerMod/bin/Release/net8.0-windows/BazaarPlannerModInstaller.exe
+Then, simply run the BazaarLogicMod/bin/Release/net8.0-windows/BazaarLogicModInstaller.exe
 
 # Developing the Mod
 1. Enable `Logging.Console` in the BepInEx config
@@ -20,7 +20,7 @@ Then, simply run the BazaarPlannerMod/bin/Release/net8.0-windows/BazaarPlannerMo
 
 # Using the Mod
 1. Press 'b' while in game to open board states on bazaarlogic.quest
-2. OR intead of 1, simply login to the planner website and click 'follow' in the board buttons to follow your game changes.
+2. OR intead of 1, simply login to the tracker website and click 'follow' in the board buttons to follow your game changes.
 
 # Contributing
 If you have any suggestions or feedback, please join the discord server and open an issue.
@@ -30,9 +30,9 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 
 #Managing releases
-Make sure the latest version number has been set in the csproj file and the BazaarPlannerModInstaller/Program.cs file
+Make sure the latest version number has been set in the csproj file and the BazaarLogicModInstaller/Program.cs file
 Run dotnet publish -c Release
 copy the Readme-what is this.txt file to the publish folder
 copy the BepInEx_win_x64_5.4.23.2.zip file to the publish folder
-zip the files of that folder into the zip file named BazaarPlannerModInstaller-v{version}.zip
+zip the files of that folder into the zip file named BazaarLogicModInstaller-v{version}.zip
 tag the branch with the release version and add the zip file to the release assets

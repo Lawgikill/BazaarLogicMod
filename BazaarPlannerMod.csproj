@@ -6,8 +6,8 @@
     <!-- Correct TFM spelling -->
     <TargetFramework>netstandard2.1</TargetFramework>
 
-    <AssemblyName>BazaarPlannerMod</AssemblyName>
-    <Description>Bazaar Planner Integration Mod</Description>
+    <AssemblyName>BazaarLogicMod</AssemblyName>
+    <Description>Bazaar Logic Integration Mod</Description>
     <Version>1.1.1</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
@@ -15,7 +15,7 @@
       https://api.nuget.org/v3/index.json;
       https://nuget.bepinex.dev/v3/index.json;
     </RestoreAdditionalProjectSources>
-    <RootNamespace>BazaarPlannerMod</RootNamespace>
+    <RootNamespace>BazaarLogicMod</RootNamespace>
     <NoWarn>CS0436</NoWarn>
   </PropertyGroup>
   <!-- Set GamePath based on which installation exists -->
@@ -32,9 +32,9 @@
     <GamePath>$(TempoPath)</GamePath>
   </PropertyGroup>
   <ItemGroup>
-  <Compile Remove="BazaarPlannerModInstaller/**" />
-  <EmbeddedResource Remove="BazaarPlannerModInstaller/**" />
-  <None Remove="BazaarPlannerModInstaller/**" />
+  <Compile Remove="BazaarLogicModInstaller/**" />
+  <EmbeddedResource Remove="BazaarLogicModInstaller/**" />
+  <None Remove="BazaarLogicModInstaller/**" />
 </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
@@ -110,13 +110,13 @@
             SourceFiles="$(TargetDir)$(TargetName).dll"
             DestinationFiles="$(GamePath)\BepInEx\plugins\$(RandomName).dll"
      />
-    <Warning Text="[BazaarPlannerMod] Successfully copied DLL as $(RandomName).dll to $(GamePath)\BepInEx\plugins\$(RandomName).dll" />
+    <Warning Text="[BazaarLogicMod] Successfully copied DLL as $(RandomName).dll to $(GamePath)\BepInEx\plugins\$(RandomName).dll" />
   </Target>
-  <Target Name="CopyToBazaarPlannerModInstaller" AfterTargets="Build">
-    <Message Text="Copying $(TargetName).dll to ./BazaarPlannerModInstaller" Importance="high" />
+  <Target Name="CopyToBazaarLogicModInstaller" AfterTargets="Build">
+    <Message Text="Copying $(TargetName).dll to ./BazaarLogicModInstaller" Importance="high" />
     <Copy
             SourceFiles="$(TargetDir)$(TargetName).dll"
-            DestinationFolder="./BazaarPlannerModInstaller"
+            DestinationFolder="./BazaarLogicModInstaller"
             SkipUnchangedFiles="true" />
   </Target>
   <Target Name="CopyCustomLauncher" AfterTargets="Build">

@@ -4,18 +4,18 @@ using System.IO;
 using System.Net.Http;
 using System.Windows.Forms;
 
-namespace BazaarPlannerModInstaller
+namespace BazaarLogicModInstaller
 {
     static class Program
     {
         private const string DOTNET_DOWNLOAD_URL = "https://download.visualstudio.microsoft.com/download/pr/f18288f6-1732-415b-b577-7fb46510479a/a98239f751a7aed31bc4aa12f348a9bf/windowsdesktop-runtime-8.0.2-win-x64.exe";
-        private const string GITHUB_API_URL = "https://api.github.com/repos/oceanseth/BazaarPlannerMod/releases/latest";
+        private const string GITHUB_API_URL = "https://api.github.com/repos/oceanseth/BazaarLogicMod/releases/latest";
         private const string CURRENT_VERSION = "1.1.1"; // Update this with your current version
 
         [STAThread]
         static void Main()
         {
-            string logPath = Path.Combine(Path.GetTempPath(), "BazaarPlannerInstaller.log");
+            string logPath = Path.Combine(Path.GetTempPath(), "BazaarLogicInstaller.log");
             try
             {
                 File.WriteAllText(logPath, $"Application starting at {DateTime.Now}\n");
@@ -81,7 +81,7 @@ namespace BazaarPlannerModInstaller
                 using (var client = new HttpClient())
                 {
                     // Add user agent as required by GitHub API
-                    client.DefaultRequestHeaders.Add("User-Agent", "BazaarPlannerModInstaller");
+                    client.DefaultRequestHeaders.Add("User-Agent", "BazaarLogicModInstaller");
                     
                     var response = client.GetStringAsync(GITHUB_API_URL).Result;
                     // Parse version from tag_name in the JSON response
@@ -92,7 +92,7 @@ namespace BazaarPlannerModInstaller
                     if (latestVersion != CURRENT_VERSION)
                     {
                         DialogResult result = MessageBox.Show(
-                            $"You are running version {CURRENT_VERSION} of the BazaarPlannerModInstaller. A newer version ({latestVersion}) is available. Please download the latest version from GitHub.\n\nWould you like to open the releases page?",
+                            $"You are running version {CURRENT_VERSION} of the BazaarLogicModInstaller. A newer version ({latestVersion}) is available. Please download the latest version from GitHub.\n\nWould you like to open the releases page?",
                             "Update Available",
                             MessageBoxButtons.YesNo,
                             MessageBoxIcon.Information);
@@ -101,7 +101,7 @@ namespace BazaarPlannerModInstaller
                         {
                             Process.Start(new ProcessStartInfo
                             {
-                                FileName = "https://github.com/oceanseth/BazaarPlannerMod/releases",
+                                FileName = "https://github.com/oceanseth/BazaarLogicMod/releases",
                                 UseShellExecute = true
                             });
                         }
@@ -113,7 +113,7 @@ namespace BazaarPlannerModInstaller
             catch (Exception ex)
             {
                 // If we can't check the version (e.g., no internet), log it but continue
-                File.AppendAllText(Path.Combine(Path.GetTempPath(), "BazaarPlannerInstaller.log"), 
+                File.AppendAllText(Path.Combine(Path.GetTempPath(), "BazaarLogicInstaller.log"), 
                     $"Failed to check version: {ex.Message}\n");
                 return true;
             }

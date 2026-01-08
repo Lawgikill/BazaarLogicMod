@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace BazaarPlannerMod
+namespace BazaarLogicMod
 {
     public static class LZString
     {

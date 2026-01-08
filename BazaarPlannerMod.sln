@@ -2,9 +2,9 @@
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BazaarPlannerMod", "BazaarPlannerMod.csproj", "{656CF743-2930-4E4B-803B-F1ED5B45DB5D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BazaarLogicMod", "BazaarLogicMod.csproj", "{656CF743-2930-4E4B-803B-F1ED5B45DB5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BazaarPlannerModInstaller", "BazaarPlannerModInstaller\BazaarPlannerModInstaller.csproj", "{1405318A-C024-4A78-957E-BAE181AB5AD8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BazaarLogicModInstaller", "BazaarLogicModInstaller\BazaarLogicModInstaller.csproj", "{1405318A-C024-4A78-957E-BAE181AB5AD8}"
     ProjectSection(ProjectDependencies) = postProject
         {656CF743-2930-4E4B-803B-F1ED5B45DB5D} = {656CF743-2930-4E4B-803B-F1ED5B45DB5D}
     EndProjectSection
