@@ -8,7 +8,7 @@
 
     <AssemblyName>BazaarLogicMod</AssemblyName>
     <Description>Bazaar Logic Integration Mod</Description>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <RestoreAdditionalProjectSources>
