@@ -71,11 +71,11 @@ namespace BazaarPlannerModInstaller
             // Initialize the instructions label and install button (but don't add them yet)
             instructionsLabel = new Label
             {
-                Text = "Please click the gear on the top right of bazaarplanner.com\n" +
+                Text = "Please click the gear on the top right of bazaarlogic.quest\n" +
                       "Login if you are not yet logged in, and then click the 'Export BazaarPlanner.config' button\n" +
                       "which will download a file. Put this file in the same directory as your\n" +
                       "BazaarPlanner 3rd party installation tool, so it can be installed correctly\n" +
-                      "and make requests on behalf of your bazaarplanner user.",
+                      "and make requests on behalf of your bazaarlogic.quest user.",
                 Location = new Point(20, installPathTextBox.Bottom + 20),
                 AutoSize = true,
                 TextAlign = ContentAlignment.MiddleCenter

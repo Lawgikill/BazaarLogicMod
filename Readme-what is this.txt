@@ -39,7 +39,7 @@ C:\Users\PC\AppData\Roaming\Tempo Launcher - Beta\game\buildx64
 Starting the game will now create files and allow you to press 'b' to load your board into bazaarplanner.
 BUT! There's more. If you want to follow and track your runs, you'll need to continue.
 
-4. Go to bazaarplanner.com and click the gear icon in the top right, login if needed, and click Export BazaarPlanner.config
+4. Go to bazaarlogic.quest and click the gear icon in the top right, login if needed, and click Export BazaarPlanner.config
 
 5. Create a directory "config" inside the BepInEx directory and Copy this config file there.
 

@@ -388,7 +388,7 @@ public class Plugin : BaseUnityPlugin
         try
         {
     
-            string url = $"https://www.bazaarplanner.com/#{compressedData}";
+            string url = $"https://bazaarlogic.quest/#{compressedData}";
             
             Application.OpenURL(url);
         }
