@@ -453,6 +453,37 @@ public class Plugin : BaseUnityPlugin
 
         // Load base items data on startup
         LoadBaseItems();
+        
+        // Check for mid-run initialization after a delay
+        Task.Run(async () =>
+        {
+            await Task.Delay(5000); // Wait for game to fully load
+            
+            try
+            {
+                // If we're in a run but don't have a runId set, initialize it
+                if (Data.Run != null && !string.IsNullOrEmpty(UidConfig?.Value) && string.IsNullOrEmpty(_runId))
+                {
+                    Console.WriteLine("Detected mid-run scenario - generating run ID and initializing in Supabase");
+                    
+                    // Generate a stable run ID based on available data
+                    // Since we don't have access to the game's internal run ID mid-run,
+                    // we'll create one based on user ID + a stable run identifier
+                    var runIdentifier = $"{UidConfig.Value}_{Data.Run.Day}_{Data.Run.Victories}_{Data.Run.Losses}";
+                    _runId = GetHashedRunId(runIdentifier, DisplayNameConfig.Value);
+                    
+                    _encounterId = await GetEncounterCount(UidConfig.Value, _runId);
+                    await InitializeRun();
+                    
+                    Console.WriteLine($"Mid-run initialization complete, runId: {_runId}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in mid-run initialization: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
+        });
     }
 
     private void LoadBaseItems()
