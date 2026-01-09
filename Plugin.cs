@@ -29,7 +29,8 @@ public class Plugin : BaseUnityPlugin
     private readonly Harmony _harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
     private static DateTime _lastSentTime = DateTime.MinValue;
     private static readonly TimeSpan SendInterval = TimeSpan.FromSeconds(2);
-    private static string FirebaseApiKey = "AIzaSyCrDTf9_S8PURED8DZBDbbEsJuMA1poduw";
+    private static string SupabaseUrl = "https://cyqfxfpdktioceyyacvv.supabase.co";
+    private static string SupabaseAnonKey = "sb_publishable_Ux1e152B3tWTpr0K-2hATQ_tcQodErw";
     private static string _runId;
     private static ConfigEntry<string> UidConfig;
     private static ConfigEntry<string> TokenConfig;
@@ -42,7 +43,6 @@ public class Plugin : BaseUnityPlugin
     private static DateTime _lastUpdateTime = DateTime.MinValue;
     private static CancellationTokenSource _updateCancellationToken;
     private static EVictoryCondition _lastVictoryCondition;
-    private static string _firebaseUrl = "https://bazaarlogic-default-rtdb.firebaseio.com/";
     private static Dictionary<string, List<string>> _baseItemTags;
     private const string GithubApiUrl = "https://api.github.com/repos/oceanseth/BazaarLogicMod/releases/latest";
 
@@ -55,75 +55,102 @@ public class Plugin : BaseUnityPlugin
         string runId = runInfo.RunId;
         string battleName = $"Day {Data.Run.Day} - {runInfo.OppName}";
         string timestamp = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds().ToString();
-        var data = new Dictionary<string, object>
+        
+        var newEncounter = new Dictionary<string, object>
         {
-            { "wins", runInfo.Wins },
-            { "losses", runInfo.Losses },
-            { "day", runInfo.Day },
+            { "name", battleName },
+            { "d", compressed },
             { "t", timestamp },
-            { "hero", runInfo.Hero },
-            { "lastEncounter", _encounterId.ToString() },
-            { $"encounters/{_encounterId}", new
-            {
-                name = battleName,
-                d = compressed,
-                t = timestamp,
-                v = _lastVictoryCondition==EVictoryCondition.Win ? 1 : 0
-            }}
+            { "v", _lastVictoryCondition==EVictoryCondition.Win ? "1" : "0" }
         };
 
-        // Add ranked field only if PlayMode is true
-        if (runInfo.PlayMode)
-        {
-            data["ranked"] = "1";
-        }
-
-        await SaveToFirebase($"users/{uid}/runs/{runId}", data);
+        await SaveToSupabase(uid, runId, runInfo, newEncounter, timestamp);
         _encounterId++;
-       // await SaveToFirebase($"users/{uid}/currentRun/id",runId);       
     }
 
-    private static async Task SaveToFirebase(string url, object data)
+    private static async Task SaveToSupabase(string uid, string runId, RunInfo runInfo, Dictionary<string, object> newEncounter, string timestamp)
     {        
         try 
         {
-            var token = await GetValidToken();
-            
-            if (string.IsNullOrEmpty(UidConfig.Value) || string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(uid))
             {
-                Console.WriteLine("Cannot save to BazaarLogic: Missing UID or token");
+                Console.WriteLine("Cannot save to BazaarLogic: Missing UID");
                 return;
             }
             
             using (var httpClient = new HttpClient())
             {
-                var jsonData = JsonConvert.SerializeObject(data);
-                Console.WriteLine($"Attempting to save to {url} with data: {jsonData}");
+                // Set up Supabase headers
+                httpClient.DefaultRequestHeaders.Add("apikey", SupabaseAnonKey);
+                httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {SupabaseAnonKey}");
+                httpClient.DefaultRequestHeaders.Add("Prefer", "return=representation,resolution=merge-duplicates");
+                
+                // Fetch existing run to get current encounters array
+                var getResponse = await httpClient.GetAsync(
+                    $"{SupabaseUrl}/rest/v1/runs?id=eq.{runId}&select=encounters"
+                );
+                
+                List<object> encounters = new List<object>();
+                if (getResponse.IsSuccessStatusCode)
+                {
+                    var existingData = await getResponse.Content.ReadAsStringAsync();
+                    var existingRuns = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(existingData);
+                    if (existingRuns != null && existingRuns.Count > 0 && existingRuns[0].ContainsKey("encounters"))
+                    {
+                        var encountersJson = JsonConvert.SerializeObject(existingRuns[0]["encounters"]);
+                        encounters = JsonConvert.DeserializeObject<List<object>>(encountersJson);
+                    }
+                }
+                
+                // Add new encounter to the array
+                encounters.Add(newEncounter);
+                
+                // Prepare run data for upsert
+                var runData = new Dictionary<string, object>
+                {
+                    { "id", runId },
+                    { "user_id", uid },
+                    { "wins", runInfo.Wins },
+                    { "losses", runInfo.Losses },
+                    { "day", runInfo.Day },
+                    { "timestamp", timestamp },
+                    { "hero", runInfo.Hero },
+                    { "encounters", encounters }
+                };
+                
+                if (runInfo.PlayMode)
+                {
+                    runData["ranked"] = true;
+                }
+                
+                var jsonData = JsonConvert.SerializeObject(runData);
+                Console.WriteLine($"Attempting to upsert run {runId}");
                 
                 var request = new HttpRequestMessage
                 {
-                    Method = new HttpMethod("PATCH"),
-                    RequestUri = new Uri($"{_firebaseUrl}{url}.json?auth={token}"),
+                    Method = HttpMethod.Post,
+                    RequestUri = new Uri($"{SupabaseUrl}/rest/v1/runs"),
                     Content = new StringContent(jsonData, Encoding.UTF8, "application/json")
                 };
                 
                 var response = await httpClient.SendAsync(request);
-                
                 var responseContent = await response.Content.ReadAsStringAsync();
+                
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"{url} saved successfully");
+                    Console.WriteLine($"Run {runId} saved successfully to Supabase");
                 }
                 else
                 {
-                    Console.WriteLine($"Failed to save {url}: {response.StatusCode} - {response.ReasonPhrase}");
+                    Console.WriteLine($"Failed to save run {runId}: {response.StatusCode} - {response.ReasonPhrase}");
                     Console.WriteLine($"Response content: {responseContent}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error in SaveToFirebase: {ex.Message}");
+            Console.WriteLine($"Error in SaveToSupabase: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
         }
     }
      private static RunInfo getRunInfo() {
@@ -411,10 +438,10 @@ public class Plugin : BaseUnityPlugin
         try
         {
             Console.WriteLine("Initializing configurations...");
-            UidConfig = BPConfig.Bind("Authentication", "Uid", "", "Firebase User ID");
-            TokenExpiryConfig = BPConfig.Bind("Authentication", "TokenExpiry", DateTime.MinValue.ToString(), "Token Expiration Time");
-            TokenConfig = BPConfig.Bind("Authentication", "Token", "", "Firebase ID Token");
-            RefreshTokenConfig = BPConfig.Bind("Authentication", "RefreshToken", "", "Firebase Refresh Token");
+            UidConfig = BPConfig.Bind("Authentication", "Uid", "", "Supabase User ID");
+            TokenExpiryConfig = BPConfig.Bind("Authentication", "TokenExpiry", DateTime.MinValue.ToString(), "(Obsolete) Token Expiration Time");
+            TokenConfig = BPConfig.Bind("Authentication", "Token", "", "(Obsolete) Supabase Token");
+            RefreshTokenConfig = BPConfig.Bind("Authentication", "RefreshToken", "", "(Obsolete) Refresh Token");
             DisplayNameConfig = BPConfig.Bind("Authentication", "DisplayName", "", "Display Name");
             
             Console.WriteLine("Configurations initialized successfully");
@@ -519,34 +546,42 @@ public class Plugin : BaseUnityPlugin
         }
     }
 
-    private static async Task<T> ReadFromFirebase<T>(string path, bool shallow = false)
+    private static async Task<int> GetEncounterCount(string uid, string runId)
     {
         try
         {
-            var token = await GetValidToken();
             using (var client = new HttpClient())
             {
-                var shallowParam = shallow ? "&shallow=true" : "";
-                var response = await client.GetAsync($"{_firebaseUrl}{path}.json?auth={token}{shallowParam}");
+                client.DefaultRequestHeaders.Add("apikey", SupabaseAnonKey);
+                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {SupabaseAnonKey}");
+                
+                var response = await client.GetAsync(
+                    $"{SupabaseUrl}/rest/v1/runs?id=eq.{runId}&select=encounters"
+                );
+                
                 if (response.IsSuccessStatusCode)
                 {
                     var result = await response.Content.ReadAsStringAsync();
-                    if (!string.IsNullOrEmpty(result) && result != "null")
+                    var runs = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(result);
+                    
+                    if (runs != null && runs.Count > 0 && runs[0].ContainsKey("encounters"))
                     {
-                        return JsonConvert.DeserializeObject<T>(result);
+                        var encountersJson = JsonConvert.SerializeObject(runs[0]["encounters"]);
+                        var encounters = JsonConvert.DeserializeObject<List<object>>(encountersJson);
+                        return encounters?.Count ?? 0;
                     }
                 }
                 else
                 {
-                    Console.WriteLine($"Failed to fetch from Firebase: {response.ReasonPhrase}");
+                    Console.WriteLine($"Failed to fetch from Supabase: {response.ReasonPhrase}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error reading from Firebase: {ex.Message}");
+            Console.WriteLine($"Error reading from Supabase: {ex.Message}");
         }
-        return default(T);
+        return 0;
     }
 
     [HarmonyPatch(typeof(AppState), "OnRunInitializedMessageReceived")]
@@ -556,79 +591,11 @@ public class Plugin : BaseUnityPlugin
         static async void Prefix(NetMessageRunInitialized obj)
         {
             _runId = GetHashedRunId(obj.RunId, DisplayNameConfig.Value);
-            var encounters = await ReadFromFirebase<Dictionary<string, object>>($"users/{UidConfig.Value}/runs/{_runId}/encounters", shallow: true);
-            _encounterId = encounters?.Count ?? 0;
+            _encounterId = await GetEncounterCount(UidConfig.Value, _runId);
         }
     }
 
-    private static async Task<string> GetValidToken()
-    {
-        try 
-        {           
-            DateTime tokenExpiry;
-            if (!DateTime.TryParse(TokenExpiryConfig.Value, out tokenExpiry))
-            {
-                tokenExpiry = DateTime.MinValue;
-            }
-
-            //Console.WriteLine($"Current token expires: {tokenExpiry}");
-            if (DateTime.Now < tokenExpiry && !string.IsNullOrEmpty(TokenConfig.Value))
-            {
-              //  Console.WriteLine("Using existing valid token");
-                return TokenConfig.Value;
-            }
-
-            if (string.IsNullOrEmpty(RefreshTokenConfig.Value))
-            {
-                Console.WriteLine("No refresh token found in config");
-                return null;
-            }
-
-            //Console.WriteLine("All config values present, attempting to refresh token...");
-            using (var client = new HttpClient())
-            {
-                var content = new FormUrlEncodedContent(new Dictionary<string, string>
-                {
-                    { "grant_type", "refresh_token" },
-                    { "refresh_token", RefreshTokenConfig.Value }
-                });
-              //  Console.WriteLine("Content: " + content + " and " + FirebaseApiKey);
-
-                var response = await client.PostAsync(
-                    $"https://securetoken.googleapis.com/v1/token?key={FirebaseApiKey}",
-                    content
-                );
-
-//                Console.WriteLine($"Token refresh response status: {response.StatusCode}");
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error response content: {errorContent}");
-                }
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = JsonConvert.DeserializeObject<Dictionary<string, string>>(
-                        await response.Content.ReadAsStringAsync()
-                    );
-
-                    TokenConfig.Value = result["id_token"];
-                    RefreshTokenConfig.Value = result["refresh_token"];
-                    TokenExpiryConfig.Value = DateTime.Now.AddHours(1).ToString();
-
-                    return TokenConfig.Value;
-                } else {
-                    Console.WriteLine("Failed to refresh token: " + response.ReasonPhrase);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error in GetValidToken: {ex.GetType().Name} - {ex.Message}");
-            return null;
-        }
-        return null;
-    }    
+    // Supabase authentication is handled via API key in headers, no token refresh needed
 
     private static string _lastMessageId = "";
 
@@ -726,25 +693,8 @@ public class Plugin : BaseUnityPlugin
                 d = compressed
             };
 
-            if (_updateCancellationToken == null)
-            {
-                // No pending update, do it immediately
-                Task.Run(() => SaveToFirebase($"users/{UidConfig.Value}/currentrun", saveData));
-            }
-            else
-            {
-                // Cancel pending update and schedule new one
-                _updateCancellationToken.Cancel();
-                _updateCancellationToken = new CancellationTokenSource();
-                
-                Task.Delay(1000, _updateCancellationToken.Token)
-                    .ContinueWith(t => {
-                        if (!t.IsCanceled) {
-                            Task.Run(() => SaveToFirebase($"users/{UidConfig.Value}/currentrun", compressed));
-                            _updateCancellationToken = null;
-                        }
-                    }, TaskContinuationOptions.OnlyOnRanToCompletion);
-            }            
+            // Note: Real-time current run syncing removed - Follow feature only syncs encounters after battles
+            // If real-time board syncing is needed in the future, implement SaveCurrentRunToSupabase
         }
     }
 
