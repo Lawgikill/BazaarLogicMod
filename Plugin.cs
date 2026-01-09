@@ -41,7 +41,6 @@ public class Plugin : BaseUnityPlugin
     private static int _encounterId = 0;
     private static ConfigEntry<string> DisplayNameConfig;
     private static DateTime _lastUpdateTime = DateTime.MinValue;
-    private static CancellationTokenSource _updateCancellationToken;
     private static EVictoryCondition _lastVictoryCondition;
     private static Dictionary<string, List<string>> _baseItemTags;
     private const string GithubApiUrl = "https://api.github.com/repos/oceanseth/BazaarLogicMod/releases/latest";
@@ -66,6 +65,81 @@ public class Plugin : BaseUnityPlugin
 
         await SaveToSupabase(uid, runId, runInfo, newEncounter, timestamp);
         _encounterId++;
+    }
+    
+    private static async Task SaveCurrentState()
+    {
+        try
+        {
+            // Check if we should throttle (only update every 2 seconds)
+            if ((DateTime.Now - _lastSentTime) < SendInterval)
+            {
+                return;
+            }
+            
+            string uid = UidConfig.Value;
+            if (string.IsNullOrEmpty(uid) || string.IsNullOrEmpty(_runId))
+            {
+                return;
+            }
+            
+            RunInfo runInfo = getRunInfo();
+            string json = CreateBazaarLogicJson(runInfo);
+            
+            // Check if board state actually changed
+            if (json == _lastBoardState)
+            {
+                return;
+            }
+            
+            _lastBoardState = json;
+            _lastSentTime = DateTime.Now;
+            
+            string compressed = LZString.CompressToEncodedURIComponent(json);
+            string timestamp = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds().ToString();
+            
+            using (var httpClient = new HttpClient())
+            {
+                httpClient.DefaultRequestHeaders.Add("apikey", SupabaseServiceKey);
+                httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {SupabaseServiceKey}");
+                httpClient.DefaultRequestHeaders.Add("Prefer", "return=representation");
+                
+                var updateData = new Dictionary<string, object>
+                {
+                    { "current_state", new Dictionary<string, object>
+                        {
+                            { "d", compressed },
+                            { "t", timestamp }
+                        }
+                    },
+                    { "wins", runInfo.Wins },
+                    { "losses", runInfo.Losses },
+                    { "day", runInfo.Day },
+                    { "timestamp", timestamp }
+                };
+                
+                var jsonData = JsonConvert.SerializeObject(updateData);
+                
+                var request = new HttpRequestMessage
+                {
+                    Method = new HttpMethod("PATCH"),
+                    RequestUri = new Uri($"{SupabaseUrl}/rest/v1/runs?id=eq.{_runId}"),
+                    Content = new StringContent(jsonData, Encoding.UTF8, "application/json")
+                };
+                
+                var response = await httpClient.SendAsync(request);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Failed to save current state: {response.StatusCode} - {errorContent}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in SaveCurrentState: {ex.Message}");
+        }
     }
 
     private static async Task SaveToSupabase(string uid, string runId, RunInfo runInfo, Dictionary<string, object> newEncounter, string timestamp)
@@ -485,6 +559,7 @@ public class Plugin : BaseUnityPlugin
             }
         });
     }
+    
 
     private void LoadBaseItems()
     {
@@ -558,6 +633,12 @@ public class Plugin : BaseUnityPlugin
         [HarmonyPrefix]
         static void Prefix()
         {
+            // Periodically save current state while in a run
+            if (Data.Run != null && !string.IsNullOrEmpty(_runId) && !string.IsNullOrEmpty(UidConfig?.Value))
+            {
+                Task.Run(() => SaveCurrentState());
+            }
+            
             if (Keyboard.current == null || !Keyboard.current.bKey.wasPressedThisFrame)
             {
                 return;
