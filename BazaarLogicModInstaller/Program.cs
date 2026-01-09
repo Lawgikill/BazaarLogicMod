@@ -9,8 +9,8 @@ namespace BazaarLogicModInstaller
     static class Program
     {
         private const string DOTNET_DOWNLOAD_URL = "https://download.visualstudio.microsoft.com/download/pr/f18288f6-1732-415b-b577-7fb46510479a/a98239f751a7aed31bc4aa12f348a9bf/windowsdesktop-runtime-8.0.2-win-x64.exe";
-        private const string GITHUB_API_URL = "https://api.github.com/repos/oceanseth/BazaarLogicMod/releases/latest";
-        private const string CURRENT_VERSION = "1.0.1"; // Update this with your current version
+        private const string GITHUB_API_URL = "https://api.github.com/repos/Lawgikill/BazaarLogicMod/releases/latest";
+        private const string CURRENT_VERSION = "1.1.0"; // Update this with your current version
 
         [STAThread]
         static void Main()
@@ -101,7 +101,7 @@ namespace BazaarLogicModInstaller
                         {
                             Process.Start(new ProcessStartInfo
                             {
-                                FileName = "https://github.com/oceanseth/BazaarLogicMod/releases",
+                                FileName = "https://github.com/Lawgikill/BazaarLogicMod/releases",
                                 UseShellExecute = true
                             });
                         }
