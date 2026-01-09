@@ -30,7 +30,7 @@ public class Plugin : BaseUnityPlugin
     private static DateTime _lastSentTime = DateTime.MinValue;
     private static readonly TimeSpan SendInterval = TimeSpan.FromSeconds(2);
     private static string SupabaseUrl = "https://cyqfxfpdktioceyyacvv.supabase.co";
-    private static string SupabaseAnonKey = "sb_publishable_Ux1e152B3tWTpr0K-2hATQ_tcQodErw";
+    private static string SupabaseServiceKey = "sb_secret_Z-r_uS5ySBtIbFsdqllJ5w_UiUaO_ts"; // Get from Supabase Dashboard → Settings → API
     private static string _runId;
     private static ConfigEntry<string> UidConfig;
     private static ConfigEntry<string> TokenConfig;
@@ -80,9 +80,9 @@ public class Plugin : BaseUnityPlugin
             
             using (var httpClient = new HttpClient())
             {
-                // Set up Supabase headers
-                httpClient.DefaultRequestHeaders.Add("apikey", SupabaseAnonKey);
-                httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {SupabaseAnonKey}");
+                // Set up Supabase headers with service role key (bypasses RLS)
+                httpClient.DefaultRequestHeaders.Add("apikey", SupabaseServiceKey);
+                httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {SupabaseServiceKey}");
                 httpClient.DefaultRequestHeaders.Add("Prefer", "return=representation,resolution=merge-duplicates");
                 
                 // Fetch existing run to get current encounters array
@@ -552,8 +552,8 @@ public class Plugin : BaseUnityPlugin
         {
             using (var client = new HttpClient())
             {
-                client.DefaultRequestHeaders.Add("apikey", SupabaseAnonKey);
-                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {SupabaseAnonKey}");
+                client.DefaultRequestHeaders.Add("apikey", SupabaseServiceKey);
+                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {SupabaseServiceKey}");
                 
                 var response = await client.GetAsync(
                     $"{SupabaseUrl}/rest/v1/runs?id=eq.{runId}&select=encounters"
@@ -592,6 +592,76 @@ public class Plugin : BaseUnityPlugin
         {
             _runId = GetHashedRunId(obj.RunId, DisplayNameConfig.Value);
             _encounterId = await GetEncounterCount(UidConfig.Value, _runId);
+            
+            // Initialize the run in Supabase when it starts
+            await InitializeRun();
+        }
+    }
+    
+    private static async Task InitializeRun()
+    {
+        try
+        {
+            string uid = UidConfig.Value;
+            if (string.IsNullOrEmpty(uid))
+            {
+                Console.WriteLine("Cannot initialize run: Missing UID");
+                return;
+            }
+            
+            RunInfo runInfo = getRunInfo();
+            string timestamp = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds().ToString();
+            
+            using (var httpClient = new HttpClient())
+            {
+                httpClient.DefaultRequestHeaders.Add("apikey", SupabaseServiceKey);
+                httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {SupabaseServiceKey}");
+                httpClient.DefaultRequestHeaders.Add("Prefer", "return=representation,resolution=merge-duplicates");
+                
+                var runData = new Dictionary<string, object>
+                {
+                    { "id", _runId },
+                    { "user_id", uid },
+                    { "wins", runInfo.Wins },
+                    { "losses", runInfo.Losses },
+                    { "day", runInfo.Day },
+                    { "timestamp", timestamp },
+                    { "hero", runInfo.Hero },
+                    { "encounters", new List<object>() } // Start with empty encounters array
+                };
+                
+                if (runInfo.PlayMode)
+                {
+                    runData["ranked"] = true;
+                }
+                
+                var jsonData = JsonConvert.SerializeObject(runData);
+                Console.WriteLine($"Initializing run {_runId} in Supabase");
+                
+                var request = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Post,
+                    RequestUri = new Uri($"{SupabaseUrl}/rest/v1/runs"),
+                    Content = new StringContent(jsonData, Encoding.UTF8, "application/json")
+                };
+                
+                var response = await httpClient.SendAsync(request);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Run {_runId} initialized successfully");
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Failed to initialize run: {response.StatusCode}");
+                    Console.WriteLine($"Error: {errorContent}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in InitializeRun: {ex.Message}");
         }
     }
 
