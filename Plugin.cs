@@ -28,7 +28,7 @@ public class Plugin : BaseUnityPlugin
 {
     private readonly Harmony _harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
     private static DateTime _lastSentTime = DateTime.MinValue;
-    private static readonly TimeSpan SendInterval = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan SendInterval = TimeSpan.FromMilliseconds(500);
     private static string SupabaseUrl = "https://cyqfxfpdktioceyyacvv.supabase.co";
     private static string SupabaseServiceKey = "sb_secret_Z-r_uS5ySBtIbFsdqllJ5w_UiUaO_ts"; // Get from Supabase Dashboard → Settings → API
     private static string _runId;

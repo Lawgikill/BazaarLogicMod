@@ -1,38 +1,66 @@
-# What does this mod do?
-**[🎥 See it in action here!](https://youtu.be/WVbbyau6Eeg)**
-1. As board state changes in game, mod sends data to the database the website reads from, using your authentication token in config file.
-2. Enables a 'streamer mode' feature so within the game you will never see your bazaar username on screen; In the games, tracked runs, and data on the site, it will use the display name in the config file.
-3. When running the mod, you can click 'follow' on the website to cause changes made in game to automatically be seen on the website.
-4. Previous runs can be seen on the site in the 'runs' tab, and reloaded to replay and test against your friends' runs and to see what boards have been the strongest in the 'builds' tab.
+# BazaarLogic Mod
 
-# Installing the Mod
-You don't need to clone this repo, simply download the latest version zip file from
-https://github.com/oceanseth/BazaarLogicMod/releases
-then run the Installer.exe file or follow Manual instructions in the text file it contains.
-- [Install on Linux](README-Linux.md)
+BazaarLogic Mod exports in-game board state to the BazaarLogic website so you can track runs, replay boards, and share builds. It also supports a "streamer mode" display name so your in-game username is not shown on the site.
 
-If you want to build it yourself, clone the repo and run `dotnet publish -c Release` in the root folder.
-Then, simply run the BazaarLogicMod/bin/Release/net8.0-windows/BazaarLogicModInstaller.exe
+See it in action: https://youtu.be/WVbbyau6Eeg
 
-# Developing the Mod
-1. Enable `Logging.Console` in the BepInEx config
-2. Change the GamePath in the csproj to point at your game installation
+## Features
+- Syncs board state to bazaarlogic.quest (works with the Follow button on the site).
+- Tracks runs and encounters for later replay.
+- Uses a configurable display name for privacy/streaming.
 
-# Using the Mod
-1. Press 'b' while in game to open board states on bazaarlogic.quest
-2. OR intead of 1, simply login to the tracker website and click 'follow' in the board buttons to follow your game changes.
+## Requirements
+- The Bazaar installed (Steam or Tempo Launcher).
+- BepInEx 5.4.x (included in the release zip).
+- A BazaarLogic account to export your config.
 
-# Contributing
-If you have any suggestions or feedback, please join the discord server and open an issue.
+## Install (Windows)
+1. Download the latest release zip from:
+   https://github.com/oceanseth/BazaarLogicMod/releases
+2. Extract the zip to a folder.
+3. Run `BazaarLogicModInstaller.exe`.
+4. On the BazaarLogic site, open Settings (gear icon) and export `BazaarLogic.config`.
+5. Put `BazaarLogic.config` in the same folder as the installer and run the installer again.
+   - The installer will place the config in `BepInEx/config/BazaarLogic.cfg`.
 
-# License
-This project is licensed under the MIT License. See the LICENSE file for details.
+If you use the Tempo Launcher and it blocks modded launches, use `customlauncher.bat` from the release zip. If you use Steam, launch the game normally.
 
+## Manual Install (Windows)
+1. Extract `BepInEx_win_x64_5.4.23.2.zip` into the folder that contains `TheBazaar.exe`.
+2. Copy `BazaarLogicMod.dll` into `BepInEx/plugins`.
+3. Create `BepInEx/config` if it does not exist.
+4. Export `BazaarLogic.config` from the BazaarLogic site and place it in `BepInEx/config`.
+5. Rename it to `BazaarLogic.cfg`.
 
-#Managing releases
-Make sure the latest version number has been set in the csproj file and the BazaarLogicModInstaller/Program.cs file
-Run dotnet publish -c Release
-copy the Readme-what is this.txt file to the publish folder
-copy the BepInEx_win_x64_5.4.23.2.zip file to the publish folder
-zip the files of that folder into the zip file named BazaarLogicModInstaller-v{version}.zip
-tag the branch with the release version and add the zip file to the release assets
+## Usage
+- Press `B` in game to open your board on bazaarlogic.quest.
+- Click Follow on the site to live-sync board changes.
+- Runs are listed in the Runs tab and can be replayed.
+
+## Configuration
+Config is stored at:
+`BepInEx/config/BazaarLogic.cfg`
+
+Key fields used by the mod:
+- `Authentication.Uid`
+- `Authentication.DisplayName`
+
+Token fields in the config are obsolete and not required.
+
+## Development
+- Update `GamePath` in `BazaarLogicMod.csproj` if your install is not auto-detected.
+- Build with `dotnet build` or `dotnet publish -c Release`.
+- The build target copies the DLL into `BepInEx/plugins` and deletes other DLLs in that folder. Adjust the target if you keep multiple plugins.
+
+## Release Checklist
+1. Update version in `BazaarLogicMod.csproj` and `BazaarLogicModInstaller/Program.cs`.
+2. `dotnet publish -c Release`
+3. Copy `Readme-what is this.txt` and `BepInEx_win_x64_5.4.23.2.zip` to the publish folder.
+4. Zip the publish folder as `BazaarLogicModInstaller-vX.Y.Z.zip`.
+5. Tag the release and upload the zip to GitHub Releases.
+
+## Contributing
+Open an issue or share feedback in the community Discord.
+
+## License
+MIT. See `LICENSE`.
