@@ -69,4 +69,4 @@ You can either run the Windows installer through Wine or install manually.
 5. Rename it to `BazaarLogic.cfg`.
 
 ## 10. Launch the Game
-Start the game from Steam. Press `B` in game to open your board on bazaarlogic.quest and use Follow for live sync.
+Start the game from Steam. Press `B` in game to open your board on bazaarlogic.quest and use Follow to view your current run state (updates about every 2 seconds) and replay encounters after battles.

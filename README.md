@@ -1,13 +1,16 @@
 # BazaarLogic Mod
 
-BazaarLogic Mod exports in-game board state to the BazaarLogic website so you can track runs, replay boards, and share builds. It also supports a "streamer mode" display name so your in-game username is not shown on the site.
+BazaarLogic Mod exports in-game board state to the BazaarLogic website so you can track runs, replay boards, and share builds. It also supports a "streamer mode" display name so your in-game username is not shown on the site or in-game banners.
 
 See it in action: https://youtu.be/WVbbyau6Eeg
 
 ## Features
-- Syncs board state to bazaarlogic.quest (works with the Follow button on the site).
+- Uploads current run state and encounter snapshots to bazaarlogic.quest (powers Follow + replays).
+- Updates the current run state about every 2 seconds while you're in a run.
 - Tracks runs and encounters for later replay.
-- Uses a configurable display name for privacy/streaming.
+- Opens your current board on the site with a single hotkey (B).
+- Uses a configurable display name for privacy/streaming (also replaces in-game banner name).
+- Checks for updates on launch (Windows installer builds).
 
 ## Requirements
 - The Bazaar installed (Steam or Tempo Launcher).
@@ -34,8 +37,8 @@ If you use the Tempo Launcher and it blocks modded launches, use `customlauncher
 
 ## Usage
 - Press `B` in game to open your board on bazaarlogic.quest.
-- Click Follow on the site to live-sync board changes.
-- Runs are listed in the Runs tab and can be replayed.
+- Click Follow on the site to view your current run state while you play.
+- Runs are listed in the Runs tab and can be replayed after battles.
 
 ## Configuration
 Config is stored at:
@@ -46,6 +49,7 @@ Key fields used by the mod:
 - `Authentication.DisplayName`
 
 Token fields in the config are obsolete and not required.
+If `Authentication.Uid` is empty, the mod will not sync runs to the site.
 
 ## Development
 - Update `GamePath` in `BazaarLogicMod.csproj` if your install is not auto-detected.
