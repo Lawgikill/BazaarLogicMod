@@ -123,7 +123,8 @@ namespace BazaarLogicModInstaller
         private void CheckForConfigFile()
         {
             string workingConfigPath = Path.Combine(Application.StartupPath, "BazaarLogic.config");
-            string targetConfigPath = Path.Combine(installPathTextBox.Text, "BepInEx", "config", "BazaarLogic.cfg");
+            string resolvedInstallPath = ResolveInstallPath(installPathTextBox.Text);
+            string targetConfigPath = Path.Combine(resolvedInstallPath, "BepInEx", "config", "BazaarLogic.cfg");
             
             bool workingConfigExists = File.Exists(workingConfigPath);
             bool targetConfigExists = File.Exists(targetConfigPath);
@@ -157,7 +158,7 @@ namespace BazaarLogicModInstaller
                 dialog.SelectedPath = installPathTextBox.Text;
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    installPathTextBox.Text = dialog.SelectedPath;
+                    installPathTextBox.Text = ResolveInstallPath(dialog.SelectedPath);
                 }
             }
         }
@@ -189,11 +190,27 @@ namespace BazaarLogicModInstaller
         {
             try
             {
-                string installPath = installPathTextBox.Text;
+                string requestedInstallPath = installPathTextBox.Text;
+                string installPath = ResolveInstallPath(requestedInstallPath);
                 if (!Directory.Exists(installPath))
                 {
                     MessageBox.Show("The specified installation directory does not exist.");
                     return;
+                }
+
+                if (!File.Exists(Path.Combine(installPath, "TheBazaar.exe")))
+                {
+                    MessageBox.Show(
+                        "Please choose the folder that contains TheBazaar.exe.",
+                        "Invalid Install Folder",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!string.Equals(requestedInstallPath, installPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    installPathTextBox.Text = installPath;
                 }
 
                 // Check write access
@@ -281,6 +298,31 @@ namespace BazaarLogicModInstaller
             }
 
             return null;
+        }
+
+        private static string ResolveInstallPath(string selectedPath)
+        {
+            if (string.IsNullOrWhiteSpace(selectedPath))
+            {
+                return selectedPath;
+            }
+
+            string normalizedPath = selectedPath.Trim();
+            string candidateExe = Path.Combine(normalizedPath, "TheBazaar.exe");
+            if (File.Exists(candidateExe))
+            {
+                return normalizedPath;
+            }
+
+            DirectoryInfo directory = new DirectoryInfo(normalizedPath);
+            if (directory.Name.Equals("working", StringComparison.OrdinalIgnoreCase) &&
+                directory.Parent != null &&
+                File.Exists(Path.Combine(directory.Parent.FullName, "TheBazaar.exe")))
+            {
+                return directory.Parent.FullName;
+            }
+
+            return normalizedPath;
         }
     }
 }
