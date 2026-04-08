@@ -287,14 +287,42 @@ namespace BazaarLogicModInstaller
 
         private static string GetBundledBepInExZipPath()
         {
-            string[] candidatePaths = Directory
+            var candidatePaths = Directory
                 .GetFiles(Application.StartupPath, "BepInEx_win_x64_*.zip")
-                .OrderByDescending(path => File.GetLastWriteTimeUtc(path))
+                .Select(path => new
+                {
+                    Path = path,
+                    Version = TryParseBepInExVersion(Path.GetFileName(path)),
+                    LastWriteTimeUtc = File.GetLastWriteTimeUtc(path)
+                })
+                .OrderByDescending(candidate => candidate.Version != null)
+                .ThenByDescending(candidate => candidate.Version)
+                .ThenByDescending(candidate => candidate.LastWriteTimeUtc)
                 .ToArray();
 
             if (candidatePaths.Length > 0)
             {
-                return candidatePaths[0];
+                return candidatePaths[0].Path;
+            }
+
+            return null;
+        }
+
+        private static Version TryParseBepInExVersion(string fileName)
+        {
+            const string prefix = "BepInEx_win_x64_";
+            const string suffix = ".zip";
+
+            if (!fileName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ||
+                !fileName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            string versionText = fileName.Substring(prefix.Length, fileName.Length - prefix.Length - suffix.Length);
+            if (Version.TryParse(versionText, out Version version))
+            {
+                return version;
             }
 
             return null;
