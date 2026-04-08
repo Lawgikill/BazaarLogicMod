@@ -16,6 +16,7 @@ Thanks again!
 
 ========== How to Install on Windows ============
 Simply extract all the files to a directory and run BazaarLogicModInstaller.exe
+Keep the bundled BepInEx zip in the same folder as the installer when you run it.
 Follow instructions to get the BazaarLogic.config file from the website; you can install once it's detected in the same directory.
 If you are using the Tempo Launcher, run customlauncher.bat to launch the game, as their launcher detects the mod.
 If you are using the Steam client launcher, run the game as you normally would.
@@ -24,7 +25,7 @@ If you are using the Steam client launcher, run the game as you normally would.
 Without running the .exe - if you don't trust it not to have been tampered with.
 Always good to do this when possible; I don't publish with viruses/malware/spyware, but your friend giving this to you might give you a keylogger along with it! If you are going to run an exe make sure its the one linked directly from the site.
 ==============================================================
-1. extract BepInEx_win_x64_5.4.23.2.zip to your game install directory (that contains TheBazaar.exe).
+1. extract BepInEx_win_x64_5.4.23.5.zip to your game install directory (that contains TheBazaar.exe).
 This directory may be different depending on if you are in Steam or standalone Tempo Launcher. The one that works for me is
 C:\Program Files (x86)\Steam\steamapps\common\The Bazaar
 

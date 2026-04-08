@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace BazaarLogicModInstaller
 {
@@ -223,15 +224,19 @@ namespace BazaarLogicModInstaller
                     }
                 }
 
-                // Extract BepInEx from embedded resource
-                string tempBepinexZip = Path.GetTempFileName();
-                using (var stream = GetType().Assembly.GetManifestResourceStream("BazaarLogicModInstaller.BepInEx_win_x64_5.4.23.2.zip"))
-                using (var fileStream = File.Create(tempBepinexZip))
+                string bepinexZipPath = GetBundledBepInExZipPath();
+                if (bepinexZipPath == null)
                 {
-                    stream.CopyTo(fileStream);
+                    MessageBox.Show(
+                        "Could not find a bundled BepInEx zip next to the installer.\n\n" +
+                        "Expected a file like 'BepInEx_win_x64_*.zip' in the same folder as BazaarLogicModInstaller.exe.",
+                        "Missing BepInEx Package",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    return;
                 }
-                System.IO.Compression.ZipFile.ExtractToDirectory(tempBepinexZip, installPath, true);
-                File.Delete(tempBepinexZip);
+
+                System.IO.Compression.ZipFile.ExtractToDirectory(bepinexZipPath, installPath, true);
 
                 // Create plugins directory
                 string pluginsPath = Path.Combine(installPath, "BepInEx", "plugins");
@@ -262,5 +267,20 @@ namespace BazaarLogicModInstaller
                 MessageBox.Show($"Error during installation: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private static string GetBundledBepInExZipPath()
+        {
+            string[] candidatePaths = Directory
+                .GetFiles(Application.StartupPath, "BepInEx_win_x64_*.zip")
+                .OrderByDescending(path => File.GetLastWriteTimeUtc(path))
+                .ToArray();
+
+            if (candidatePaths.Length > 0)
+            {
+                return candidatePaths[0];
+            }
+
+            return null;
+        }
     }
-} 
+}

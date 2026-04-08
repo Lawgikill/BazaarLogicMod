@@ -14,7 +14,7 @@ See it in action: https://youtu.be/WVbbyau6Eeg
 
 ## Requirements
 - The Bazaar installed (Steam or Tempo Launcher).
-- BepInEx 5.4.x (included in the release zip).
+- BepInEx 5.4.x (`BepInEx_win_x64_*.zip` is included in the release zip beside the installer).
 - A BazaarLogic account to export your config.
 
 ## Install (Windows)
@@ -29,7 +29,7 @@ See it in action: https://youtu.be/WVbbyau6Eeg
 If you use the Tempo Launcher and it blocks modded launches, use `customlauncher.bat` from the release zip. If you use Steam, launch the game normally.
 
 ## Manual Install (Windows)
-1. Extract `BepInEx_win_x64_5.4.23.2.zip` into the folder that contains `TheBazaar.exe`.
+1. Extract `BepInEx_win_x64_5.4.23.5.zip` into the folder that contains `TheBazaar.exe`.
 2. Copy `BazaarLogicMod.dll` into `BepInEx/plugins`.
 3. Create `BepInEx/config` if it does not exist.
 4. Export `BazaarLogic.config` from the BazaarLogic site and place it in `BepInEx/config`.
@@ -58,10 +58,11 @@ If `Authentication.Uid` is empty, the mod will not sync runs to the site.
 
 ## Release Checklist
 1. Update version in `BazaarLogicMod.csproj` and `BazaarLogicModInstaller/Program.cs`.
-2. `dotnet publish -c Release`
-3. Copy `Readme-what is this.txt` and `BepInEx_win_x64_5.4.23.2.zip` to the publish folder.
-4. Zip the publish folder as `BazaarLogicModInstaller-vX.Y.Z.zip`.
-5. Tag the release and upload the zip to GitHub Releases.
+2. Replace `BazaarLogicModInstaller/BepInEx_win_x64_5.4.23.5.zip` with the BepInEx package you want to ship.
+3. `dotnet publish -c Release`
+4. Verify the publish folder contains `BazaarLogicModInstaller.exe`, `BazaarLogicMod.dll`, `Readme-what is this.txt`, `customlauncher.bat`, and the intended `BepInEx_win_x64_*.zip`.
+5. Zip the publish folder as `BazaarLogicModInstaller-vX.Y.Z.zip`.
+6. Tag the release and upload the zip to GitHub Releases.
 
 ## Contributing
 Open an issue or share feedback in the community Discord.

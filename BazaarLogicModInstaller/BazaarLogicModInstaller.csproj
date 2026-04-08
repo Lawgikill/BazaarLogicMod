@@ -2,7 +2,6 @@
     <ItemGroup>
         <EmbeddedResource Include="logo.png" />
         <EmbeddedResource Include="BazaarLogicMod.dll" />
-        <EmbeddedResource Include="BepInEx_win_x64_5.4.23.2.zip" />
     </ItemGroup>
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -17,9 +16,9 @@
   </PropertyGroup>
   
   <Target Name="CopyCustomLauncherToPublish" AfterTargets="Publish">
-    <Message Text="Copying customlauncher.bat and README to publish folder" Importance="high" />
+    <Message Text="Copying customlauncher.bat, README, and BepInEx zip to publish folder" Importance="high" />
     <Copy
-            SourceFiles="../customlauncher.bat;../Readme-what is this.txt"
+            SourceFiles="../customlauncher.bat;../Readme-what is this.txt;BepInEx_win_x64_5.4.23.5.zip"
             DestinationFolder="$(PublishDir)"
             SkipUnchangedFiles="true" />
   </Target>
